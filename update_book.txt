@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "operation": "update"
+  },
+    "dictionary": {
+            "ISBN": "1234ABCD",
+            "title": "My First Book",
+            "author": "Tomer Hai",
+            "publication_date": "22-03-2024",
+            "description": "the first book in the store, second edition"
+    }
+}

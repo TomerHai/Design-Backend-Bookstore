@@ -1,0 +1,10 @@
+{
+  "pathParameters": {
+    "operation": "echo"
+  },
+    "dictionary": {
+        "somekey1": "somevalue1",
+        "somekey2": "somevalue2",
+		"message": "This is the dictionary test message"
+    }
+}

@@ -1,0 +1,8 @@
+{
+  "pathParameters": {
+    "operation": "delete"
+  },
+    "dictionary": {
+            "ISBN": "1234ABCD"
+    }
+}

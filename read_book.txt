@@ -1,0 +1,8 @@
+{
+  "pathParameters": {
+    "operation": "read"
+  },
+    "dictionary": {
+            "ISBN": "1234ABCD"
+    }
+}

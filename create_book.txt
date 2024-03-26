@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "operation": "create"
+  },
+    "dictionary": {
+            "ISBN": "1234ABCD",
+            "title": "My First Book",
+            "author": "Tomer Hai",
+            "publication_date": "21-03-2024",
+            "description": "the first book in the store"
+    }
+}
