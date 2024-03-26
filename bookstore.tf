@@ -43,12 +43,12 @@ resource "aws_ssm_parameter" "s3_bucket_name" {
 
 # Set the DB
 module "database" {
-  source "./modules/database"
+  source = "./modules/database"
 }
 
 # Set the storage
 module "storage" {
-  source "./modules/storage"
+  source = "./modules/storage"
 }
 
 # Set the IAM policy and role
