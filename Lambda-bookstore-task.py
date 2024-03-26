@@ -1,7 +1,12 @@
 import json
 import boto3
+import os
 import base64
 from botocore.exceptions import ClientError
+
+# Access environment variables (assuming they're set up)
+dynamodb_table_name = os.environ['/app/bookstore/dynamodb_table_name']
+bucket_name = os.environ['/app/bookstore/s3_bucket_name']
 
 # Get path parameter (operation) and book data from API Gateway event
 # This function checks for an optional "Image" key in the book data or a base64 encoded image in the event body.
@@ -33,9 +38,9 @@ def lambda_handler(event, context):
 
     # Access DynamoDB resource and S3 client
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table('bookstore')
+    table = dynamodb.Table(dynamodb_table_name)
     s3_client = boto3.client('s3')
-    bucket_name = 'bookstore-task-images'
+    
 
     # Perform operation based on path parameter
     response = {}  # Initialize an empty response dictionary to store the response from the CRUD functions
