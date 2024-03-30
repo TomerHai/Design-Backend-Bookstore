@@ -1,4 +1,4 @@
-# storage/main.tf
+# modules/storage/storage.tf
 
 # Creates an S3 bucket named "bookstore-task-images" to store book images.
 # This bucket uses the default object ownership (bucket owner) and does not 

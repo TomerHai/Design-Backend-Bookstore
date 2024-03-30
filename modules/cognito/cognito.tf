@@ -1,4 +1,4 @@
-# cognito/cognito.tf
+# modules/cognito/cognito.tf
 
 # Using Cognito
 # Provision AWS Cognito user pool
@@ -29,4 +29,8 @@ resource "aws_cognito_user" "example" {
   user_pool_id = aws_cognito_user_pool.pool.id
   username = "tomer"
   password = "Test@123"
+}
+
+output "user_pool_arn" {
+  value = aws_cognito_user_pool.pool.arn
 }

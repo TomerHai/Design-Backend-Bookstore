@@ -1,4 +1,5 @@
-# lambda/lambda_role.tf
+# modules/iam_roles/iam_roles.tf
+
 # Creating the relevant role for allowing Lambda to access the bookstore DB
 
 resource "aws_iam_role" "IAM-Bookstore-task-role" {
@@ -16,4 +17,7 @@ resource "aws_iam_role" "IAM-Bookstore-task-role" {
         }
     ]
   })
+}
+output "iam_roles" {
+  value = aws_iam_role.IAM-Bookstore-task-role.arn
 }

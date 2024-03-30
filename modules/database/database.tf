@@ -1,4 +1,4 @@
-# database/main.tf
+# modules/database/database.tf
 # Creating a DynamoDB table for book inventory
 
 resource "aws_dynamodb_table" "bookstore" {

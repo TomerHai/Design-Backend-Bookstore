@@ -1,4 +1,9 @@
-# lambda.tf module
+# modules/lambda/lambda.tf module
+
+variable "iam_role_arn" {
+  type = string
+  description = "The arn of the iam_role for lambda permissions"
+}
 
 # create the data source for the Lambda
 
@@ -18,7 +23,7 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 resource "aws_lambda_function" "Lambda-bookstore-task" {
   filename      = "lambda-function.zip"
   function_name = "Lambda-bookstore-task"
-  role          = module.iam.lambda_role.arn # read the arn from the lambda_role module of IAM
+  role          = var.iam_role_arn  # Use the output value of the iam_roles module
   handler       = "Lambda-bookstore-task.lambda_handler"  # Specify the Lambda function code
   runtime       = "python3.12"  # Choosing the python runtime
   source_code_hash = data.archive_file.lambda_package.output_base64sha256
@@ -26,4 +31,10 @@ resource "aws_lambda_function" "Lambda-bookstore-task" {
   logging_config {
     log_format = "JSON"
   }
+}
+output "lambda_function_name" {
+  value = aws_lambda_function.Lambda-bookstore-task.function_name
+}
+output "lambda_function_arn" {
+  value = aws_lambda_function.Lambda-bookstore-task.arn
 }

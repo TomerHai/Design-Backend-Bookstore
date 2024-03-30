@@ -1,5 +1,25 @@
 # api_gateway/api_gateway.tf
 
+# declare on variables that we'll pass from the main terraform (bookstore.tf) to here
+
+variable "aws_region" {
+  type = string
+}
+
+variable "aws_account_id" {
+  type = string
+}
+
+# source the lambda and iam_roles modules here for reference
+module "iam_roles" {
+  source = "../iam_roles"
+}
+
+module "lambda" {
+  source = "../lambda"
+  iam_role_arn = module.iam_roles.iam_roles
+}
+
 # Create an API Gateway
 
 resource "aws_api_gateway_rest_api" "BookstoreOperations" {
@@ -40,7 +60,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   # and I will need to manuall switch it to true and then back to false on the console to make it work (which means the console does additional task when changing the proxy value
   # and I miss it here in the terraform.
 
-  uri = "${module.aws_lambda_function.Lambda-bookstore-task.invoke_arn}"
+  uri = module.lambda.lambda_function_arn  # Access the "invoke_arn" output
   type = "AWS"
   passthrough_behavior    = "WHEN_NO_MATCH"  # Explicitly disable proxy
 }
@@ -70,11 +90,11 @@ resource "aws_api_gateway_integration_response" "proxy" {
 # Once I've discovered it adds a resource-based policy to the Lambda, it was easy to replicate it here correctly, which is what the resource below does.
 
 resource "aws_lambda_permission" "allow_api_gateway_to_invoke" {
-  statement_id = "allow-api-gateway-invoke-${module.aws_lambda_function.Lambda-bookstore-task.function_name}"
+  statement_id = "allow-api-gateway-invoke-${module.lambda.lambda_function_name}"
   principal = "apigateway.amazonaws.com"  # Define the principal to work with
   action = "lambda:InvokeFunction"
-  function_name = module.aws_lambda_function.Lambda-bookstore-task.arn
-  source_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*/*/POST/bookstore"
+  function_name = module.lambda.lambda_function_name
+  source_arn = "arn:aws:execute-api:${var.aws_region}:${var.aws_account_id}:*/*/POST/bookstore"
   depends_on = [  # this assumes the method is created first (see above)
     aws_api_gateway_method.BookstoreManager
   ] 
@@ -91,12 +111,17 @@ resource "aws_api_gateway_deployment" "bookstore_deployment" {
     aws_api_gateway_integration.lambda_integration
   ]
 }
-
 # Add Cognito Authorizer in the API GW for authorization
+# Set variable to be used for the cognito user_pool_arn
+variable "cognito_user_pool_arn" {
+  type = string
+  description = "ARN of the Cognito user pool"
+}
+
 # when the authorizer is enables, any incoming request token is first validated against this Cognito user pool before Lambda is triggered
 resource "aws_api_gateway_authorizer" "cognito_authorizer" {
     name = "cognito_authorizer" # providing a name to the authorizer
     rest_api_id = aws_api_gateway_rest_api.BookstoreOperations.id # associate it with the REST API I built
     type = "COGNITO_USER_POOLS"  # Use Cognito user pool for authorization this should match the authorization tag I've placed on the aws_api_gateway_method resource
-    provider_arns = [module.cognito.aws_cognito_user_pool.pool.arn]  # Reference to the user pool from the Cognito module in which the validated users reside
+    provider_arns = [var.cognito_user_pool_arn]  # Reference to the user pool from the Cognito module in which the validated users reside
 }
