@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "operation": "create"
+  },
+    "dictionary": {
+            "ISBN": "NOK45E33",
+            "title": "My engagement with Lambda Invocation",
+            "author": "Tomer Hai",
+            "publication_date": "24-03-2024",
+            "description": "This was a Tango. We had it running, and in the end it was a charm"
+    }
+}
