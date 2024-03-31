@@ -200,7 +200,7 @@ Terraform will perform the following actions:
       + function_name       = "Lambda-bookstore-task"
       + id                  = (known after apply)
       + principal           = "apigateway.amazonaws.com"
-      + source_arn          = "arn:aws:execute-api:il-central-1:XXXXXXXX:*/*/POST/bookstore"
+      + source_arn          = "arn:aws:execute-api:il-central-1:XXXXXXXXX:*/*/POST/bookstore"
       + statement_id        = "allow-api-gateway-invoke-Lambda-bookstore-task"
       + statement_id_prefix = (known after apply)
     }
@@ -313,6 +313,31 @@ Terraform will perform the following actions:
       + tags_all    = (known after apply)
     }
 
+  # module.iam_roles.aws_iam_policy.lambda_ssm_permissions will be created
+  + resource "aws_iam_policy" "lambda_ssm_permissions" {
+      + arn         = (known after apply)
+      + id          = (known after apply)
+      + name        = "lambda_ssm_permissions"
+      + name_prefix = (known after apply)
+      + path        = "/"
+      + policy      = jsonencode(
+            {
+              + Statement = [
+                  + {
+                      + Action   = "ssm:GetParameter"
+                      + Effect   = "Allow"
+                      + Resource = [
+                          + "arn:aws:ssm:il-central-1:XXXXXXXXX:parameter/app/bookstore/*",
+                        ]
+                    },
+                ]
+              + Version   = "2012-10-17"
+            }
+        )
+      + policy_id   = (known after apply)
+      + tags_all    = (known after apply)
+    }
+
   # module.iam_roles.aws_iam_role.IAM-Bookstore-task-role will be created
   + resource "aws_iam_role" "IAM-Bookstore-task-role" {
       + arn                   = (known after apply)
@@ -340,6 +365,13 @@ Terraform will perform the following actions:
       + path                  = "/"
       + tags_all              = (known after apply)
       + unique_id             = (known after apply)
+    }
+
+  # module.iam_roles.aws_iam_role_policy_attachment.attach_ssm_permissions will be created
+  + resource "aws_iam_role_policy_attachment" "attach_ssm_permissions" {
+      + id         = (known after apply)
+      + policy_arn = (known after apply)
+      + role       = "IAM-Bookstore-task-role"
     }
 
   # module.lambda.data.archive_file.lambda_package will be read during apply
@@ -424,7 +456,7 @@ Terraform will perform the following actions:
       + website_endpoint            = (known after apply)
     }
 
-Plan: 21 to add, 0 to change, 0 to destroy.
+Plan: 23 to add, 0 to change, 0 to destroy.
 
 ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -433,53 +465,58 @@ Saved the plan to: terraform-bookstore-plan.zip
 To perform exactly these actions, run the following command to apply:
     terraform apply "terraform-bookstore-plan.zip"
 
-(base) D:\test> terraform apply terraform-bookstore-plan.zip
+(base) D:\test> terraform apply  terraform-bookstore-plan.zip
+module.iam_roles.aws_iam_policy.lambda_ssm_permissions: Creating...
 module.iam_roles.aws_iam_role.IAM-Bookstore-task-role: Creating...
 module.database.aws_dynamodb_table.bookstore: Creating...
 module.cognito.aws_cognito_user_pool.pool: Creating...
 module.storage.aws_s3_bucket.book_images: Creating...
-module.cognito.aws_cognito_user_pool.pool: Creation complete after 1s [id=il-central-1_YSB4ZeUI0]
+module.cognito.aws_cognito_user_pool.pool: Creation complete after 1s [id=il-central-1_98yyKjtjE]
 module.cognito.aws_cognito_user.example: Creating...
 module.cognito.aws_cognito_user_pool_client.api_client: Creating...
 module.storage.aws_s3_bucket.book_images: Creation complete after 1s [id=bookstore-task-images]
 aws_ssm_parameter.s3_bucket_name: Creating...
-module.cognito.aws_cognito_user_pool_client.api_client: Creation complete after 0s [id=3g7t93earu6k3vkucv7uq6fi1k]
+module.iam_roles.aws_iam_policy.lambda_ssm_permissions: Creation complete after 1s [id=arn:aws:iam::XXXXXXXXX:policy/lambda_ssm_permissions]
+module.cognito.aws_cognito_user_pool_client.api_client: Creation complete after 0s [id=v40lh387aq7t865690bdv6qa7]
+aws_ssm_parameter.s3_bucket_name: Creation complete after 0s [id=/app/bookstore/s3_bucket_name]
 module.iam_roles.aws_iam_role.IAM-Bookstore-task-role: Creation complete after 1s [id=IAM-Bookstore-task-role]
+module.iam_roles.aws_iam_role_policy_attachment.attach_ssm_permissions: Creating...
+module.cognito.aws_cognito_user.example: Creation complete after 0s [id=il-central-1_98yyKjtjE/tomer]
+module.iam_roles.aws_iam_role_policy_attachment.attach_ssm_permissions: Creation complete after 0s [id=IAM-Bookstore-task-role-20240331221726164600000001]
 module.lambda.aws_cloudwatch_log_group.lambda_logs: Creating...
 module.lambda.data.archive_file.lambda_package: Reading...
 module.lambda.data.archive_file.lambda_package: Read complete after 0s [id=9e701ed84f1499152e4565146a1b1c2b5783cb96]
 module.lambda.aws_lambda_function.Lambda-bookstore-task: Creating...
-aws_ssm_parameter.s3_bucket_name: Creation complete after 0s [id=/app/bookstore/s3_bucket_name]
 module.lambda.aws_cloudwatch_log_group.lambda_logs: Creation complete after 0s [id=/aws/lambda/Lambda-bookstore-task]
-module.cognito.aws_cognito_user.example: Creation complete after 0s [id=il-central-1_YSB4ZeUI0/tomer]
-module.database.aws_dynamodb_table.bookstore: Creation complete after 6s [id=bookstore]
-aws_ssm_parameter.dynamodb_table_name: Creating...
-aws_ssm_parameter.dynamodb_table_name: Creation complete after 1s [id=/app/bookstore/dynamodb_table_name]
+module.database.aws_dynamodb_table.bookstore: Still creating... [10s elapsed]
 module.lambda.aws_lambda_function.Lambda-bookstore-task: Still creating... [10s elapsed]
-module.lambda.aws_lambda_function.Lambda-bookstore-task: Creation complete after 13s [id=Lambda-bookstore-task]
+module.database.aws_dynamodb_table.bookstore: Creation complete after 13s [id=bookstore]
+aws_ssm_parameter.dynamodb_table_name: Creating...
+aws_ssm_parameter.dynamodb_table_name: Creation complete after 0s [id=/app/bookstore/dynamodb_table_name]
+module.lambda.aws_lambda_function.Lambda-bookstore-task: Creation complete after 14s [id=Lambda-bookstore-task]
 module.iam_policy.aws_iam_policy.IAM-Bookstore-task-policy: Creating...
 module.api_gateway.aws_api_gateway_rest_api.BookstoreOperations: Creating...
-module.iam_policy.aws_iam_policy.IAM-Bookstore-task-policy: Creation complete after 1s [id=arn:aws:iam::XXXXXXXX:policy/IAM-Bookstore-task-policy]
+module.iam_policy.aws_iam_policy.IAM-Bookstore-task-policy: Creation complete after 0s [id=arn:aws:iam::XXXXXXXXX:policy/IAM-Bookstore-task-policy]
 aws_iam_role_policy_attachment.lambda_invoke_attachment: Creating...
-module.api_gateway.aws_api_gateway_rest_api.BookstoreOperations: Creation complete after 1s [id=52uo1t4f0e]
+module.api_gateway.aws_api_gateway_rest_api.BookstoreOperations: Creation complete after 0s [id=0g2xyxwyy0]
 module.api_gateway.aws_api_gateway_resource.root: Creating...
 module.api_gateway.aws_api_gateway_authorizer.cognito_authorizer: Creating...
-module.api_gateway.aws_api_gateway_authorizer.cognito_authorizer: Creation complete after 0s [id=ihuwvc]
-module.api_gateway.aws_api_gateway_resource.root: Creation complete after 0s [id=xm48zb]
+module.api_gateway.aws_api_gateway_resource.root: Creation complete after 0s [id=gcnbww]
+module.api_gateway.aws_api_gateway_authorizer.cognito_authorizer: Creation complete after 1s [id=r40an6]
 module.api_gateway.aws_api_gateway_method.BookstoreManager: Creating...
-module.api_gateway.aws_api_gateway_method.BookstoreManager: Creation complete after 0s [id=agm-52uo1t4f0e-xm48zb-POST]
-aws_iam_role_policy_attachment.lambda_invoke_attachment: Creation complete after 0s [id=IAM-Bookstore-task-role-20240331163207201000000001]
+module.api_gateway.aws_api_gateway_method.BookstoreManager: Creation complete after 0s [id=agm-0g2xyxwyy0-gcnbww-POST]
 module.api_gateway.aws_api_gateway_method_response.BookstoreManager: Creating...
 module.api_gateway.aws_lambda_permission.allow_api_gateway_to_invoke: Creating...
 module.api_gateway.aws_api_gateway_integration.lambda_integration: Creating...
-module.api_gateway.aws_api_gateway_method_response.BookstoreManager: Creation complete after 0s [id=agmr-52uo1t4f0e-xm48zb-POST-200]
+module.api_gateway.aws_api_gateway_method_response.BookstoreManager: Creation complete after 0s [id=agmr-0g2xyxwyy0-gcnbww-POST-200]
 module.api_gateway.aws_lambda_permission.allow_api_gateway_to_invoke: Creation complete after 0s [id=allow-api-gateway-invoke-Lambda-bookstore-task]
-module.api_gateway.aws_api_gateway_integration.lambda_integration: Creation complete after 0s [id=agi-52uo1t4f0e-xm48zb-POST]
-module.api_gateway.aws_api_gateway_integration_response.proxy: Creating...
+aws_iam_role_policy_attachment.lambda_invoke_attachment: Creation complete after 1s [id=IAM-Bookstore-task-role-20240331221740508000000002]
+module.api_gateway.aws_api_gateway_integration.lambda_integration: Creation complete after 0s [id=agi-0g2xyxwyy0-gcnbww-POST]
 module.api_gateway.aws_api_gateway_deployment.bookstore_deployment: Creating...
-module.api_gateway.aws_api_gateway_integration_response.proxy: Creation complete after 1s [id=agir-52uo1t4f0e-xm48zb-POST-200]
-module.api_gateway.aws_api_gateway_deployment.bookstore_deployment: Creation complete after 1s [id=7h9cif]
+module.api_gateway.aws_api_gateway_integration_response.proxy: Creating...
+module.api_gateway.aws_api_gateway_integration_response.proxy: Creation complete after 0s [id=agir-0g2xyxwyy0-gcnbww-POST-200]
+module.api_gateway.aws_api_gateway_deployment.bookstore_deployment: Creation complete after 0s [id=2kdnsj]
 
-Apply complete! Resources: 21 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 23 added, 0 changed, 0 destroyed.
 
 (base) D:\test>
