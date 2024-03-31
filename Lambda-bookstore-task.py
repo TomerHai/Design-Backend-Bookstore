@@ -4,9 +4,11 @@ import os
 import base64
 from botocore.exceptions import ClientError
 
-# Access environment variables (assuming they're set up)
-dynamodb_table_name = os.environ['/app/bookstore/dynamodb_table_name']
-bucket_name = os.environ['/app/bookstore/s3_bucket_name']
+# Access environment variables on the AWS SSM parameter store to get the dynamoDB table name and the S3 Bucket name
+ssm_client = boto3.client('ssm')
+
+dynamodb_table_name = ssm_client.get_parameter(Name='/app/bookstore/dynamodb_table_name')['Parameter']['Value']
+bucket_name = ssm_client.get_parameter(Name='/app/bookstore/s3_bucket_name')['Parameter']['Value']
 
 # Get path parameter (operation) and book data from API Gateway event
 # This function checks for an optional "Image" key in the book data or a base64 encoded image in the event body.

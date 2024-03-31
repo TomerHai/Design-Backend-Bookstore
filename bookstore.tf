@@ -1,3 +1,5 @@
+# bookstore.tf - Main terraform that calls all needed modules
+
 # Define variables for the AWS provider and access
 # For this task, the process assumes we deploy using terraform with variables to hold the access/secret keys used to perform this task
 
@@ -19,16 +21,7 @@ variable "secret_key" {
 
 # Add a data source to retrieve the information of the current caller's identity, included the account ID. Define it as avariable to pass to needed modules
 
-variable "aws_account_id" {
-  type = string
-  description = "The AWS account ID"
-}
 data "aws_caller_identity" "current" {}
-
-# Assign the retrieved account ID to the variable
-output "aws_account_id" {
-  value = data.aws_caller_identity.current.account_id
-}
 
 // Providers
 provider "aws" {
@@ -63,20 +56,23 @@ resource "aws_ssm_parameter" "s3_bucket_name" {
 # Set the IAM roles
 module "iam_roles" {
   source = "./modules/iam_roles"
+  aws_region  = var.aws_region
+  aws_account_id = data.aws_caller_identity.current.account_id  # Access directly the account id from the data source
 }
 
-# Set the Lambda function
+# Set the Lambda function. Provide the relevant IAM role to it.
 module "lambda" {
+  iam_roles_arn = module.iam_roles.iam_roles_arn
   source = "./modules/lambda"
-  depends_on = [module.iam_roles]  # Explicitly declare dependency on the IAM module
-  iam_role_arn = module.iam_roles.iam_roles
+  depends_on     = [module.iam_roles]  # Ensure that the Lambda module depends on the iam_roles module
 }
-# Set the IAM policy
+
+# Set the IAM policy, provide the relevant outputs from database and Lambda modules as required
 module "iam_policy" {
-  source = "./modules/iam_policy"
+  source = "./modules/iam_policies"
   # pass the required variables
   aws_region  = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = data.aws_caller_identity.current.account_id  # Access directly the account id from the data source
   dynamo_table_name = module.database.table_name
   lambda_function_name = module.lambda.lambda_function_name
   lambda_function_arn = module.lambda.lambda_function_arn
@@ -84,8 +80,8 @@ module "iam_policy" {
 
 # Attach the policy to the IAM role (implicitly depends on IAM policy)
 resource "aws_iam_role_policy_attachment" "lambda_invoke_attachment" {
-  role       = module.iam_roles.iam_roles  # referring to the local resource
-  policy_arn = module.iam_policy.iam_policy_arn.value
+  role       = module.iam_roles.iam_roles_name  # referring to the iam_role_name
+  policy_arn = module.iam_policy.iam_policy_arn # directly using the output value provided by the iam_policy module, which is already the resolved ARN string
 }
  
 # Set the Cognito
@@ -93,18 +89,15 @@ module "cognito" {
   source = "./modules/cognito"  
 }
 
-# Assign the user pool ARN from the `cognito` module's output
-variable "cognito_user_pool_arn" {
-  type = string
-  description = "ARN of the Cognito user pool"
-}
-
-# Set the API Gateway module and use the variable of the cognito pool we took as input for the api_gateway
+# Set the API Gateway module and use the variable of the cognito pool we took as input for the api_gateway. Provide the needed outputs from the Lambda module
 
 module "api_gateway" {
+  lambda_function_name = module.lambda.lambda_function_name
+  lambda_function_arn = module.lambda.lambda_function_arn  
   source = "./modules/api_gateway"
-  cognito_user_pool_arn = var.cognito_user_pool_arn
+  cognito_user_pool_arn = module.cognito.user_pool_arn
   depends_on =[module.cognito, module.lambda] # Explicitly declare dependencies on the Cognito and Lambda modules
   aws_region = var.aws_region
-  aws_account_id = var.aws_account_id
+  aws_account_id = data.aws_caller_identity.current.account_id  # Access directly the account id from the data source
+ 
 }

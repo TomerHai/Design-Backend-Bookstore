@@ -10,14 +10,14 @@ variable "aws_account_id" {
   type = string
 }
 
-# source the lambda and iam_roles modules here for reference
-module "iam_roles" {
-  source = "../iam_roles"
+variable "lambda_function_name" {
+  type = string
+  description = "The name of the Lambda function"
 }
 
-module "lambda" {
-  source = "../lambda"
-  iam_role_arn = module.iam_roles.iam_roles
+variable "lambda_function_arn" {
+  type = string
+  description = "The arn address of the Lambda function"
 }
 
 # Create an API Gateway
@@ -60,7 +60,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
   # and I will need to manuall switch it to true and then back to false on the console to make it work (which means the console does additional task when changing the proxy value
   # and I miss it here in the terraform.
 
-  uri = module.lambda.lambda_function_arn  # Access the "invoke_arn" output
+  uri = var.lambda_function_arn  # Access the "invoke_arn" output
   type = "AWS"
   passthrough_behavior    = "WHEN_NO_MATCH"  # Explicitly disable proxy
 }
@@ -90,10 +90,10 @@ resource "aws_api_gateway_integration_response" "proxy" {
 # Once I've discovered it adds a resource-based policy to the Lambda, it was easy to replicate it here correctly, which is what the resource below does.
 
 resource "aws_lambda_permission" "allow_api_gateway_to_invoke" {
-  statement_id = "allow-api-gateway-invoke-${module.lambda.lambda_function_name}"
+  statement_id = "allow-api-gateway-invoke-${var.lambda_function_name}"
   principal = "apigateway.amazonaws.com"  # Define the principal to work with
   action = "lambda:InvokeFunction"
-  function_name = module.lambda.lambda_function_name
+  function_name = var.lambda_function_name
   source_arn = "arn:aws:execute-api:${var.aws_region}:${var.aws_account_id}:*/*/POST/bookstore"
   depends_on = [  # this assumes the method is created first (see above)
     aws_api_gateway_method.BookstoreManager

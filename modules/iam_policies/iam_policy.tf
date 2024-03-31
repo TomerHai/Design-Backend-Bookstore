@@ -1,4 +1,4 @@
-# modules/iam_policy/iam_policy.tf
+# modules/iam_policies/iam_policy.tf
 
 # Creating an IAM policy and role for Lambda functions
 # I used ${var.aws_region} and ${var.aws_account_id} to dynamically insert the region and account ID into the resource ARNs.

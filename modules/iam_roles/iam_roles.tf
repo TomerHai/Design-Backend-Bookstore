@@ -18,6 +18,10 @@ resource "aws_iam_role" "IAM-Bookstore-task-role" {
     ]
   })
 }
-output "iam_roles" {
+
+output "iam_roles_arn" {
   value = aws_iam_role.IAM-Bookstore-task-role.arn
+}
+output "iam_roles_name" {
+  value = aws_iam_role.IAM-Bookstore-task-role.name
 }
