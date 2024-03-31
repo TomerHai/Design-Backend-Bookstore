@@ -33,8 +33,9 @@ User interface implementation is not necessary for this task.
 │   │   └── cognito.tf
 │   ├── database
 │   │   └── database.tf
-│   ├── iam_policy
+│   ├── iam_policies
 │   │   └── iam_policy.tf
+│   │   └── ssm_permissions.tf
 │   ├── iam_roles
 │   │   └── iam_roles.tf
 │   ├── lambda
