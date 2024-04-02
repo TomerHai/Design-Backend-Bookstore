@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Design-Backend-Bookstore",
+			"path": "."
+		},
+		{
+			"name": "Datasets-Merging",
+			"path": "../Datasets-Merging"
+		}
+	],
+	"settings": {}
+}
